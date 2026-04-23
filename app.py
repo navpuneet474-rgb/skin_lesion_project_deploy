@@ -2,28 +2,22 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Tuple
-
+import os
 import numpy as np
 import tensorflow as tf
 from flask import Flask, jsonify, render_template, request
 from PIL import Image, UnidentifiedImageError
 
-APP_DIR = Path(__file__).resolve().parent
-PROJECT_ROOT = APP_DIR.parent
-MODEL_DIR = PROJECT_ROOT / "notebooks"
-MODEL_FILE = "final_model_new.keras"
+MODEL_PATH = Path(__file__).parent / "final_model_new.keras"
 
 IMG_SIZE: Tuple[int, int] = (224, 224)
 THRESHOLD = 0.33
 
 
 def find_model_path() -> Path:
-    candidate = MODEL_DIR / MODEL_FILE
-    if candidate.exists():
-        return candidate
-    raise FileNotFoundError(
-        f"Required model not found: {MODEL_FILE} in notebooks/."
-    )
+    if MODEL_PATH.exists():
+        return MODEL_PATH
+    raise FileNotFoundError(f"Model not found: {MODEL_PATH}")
 
 
 def load_model() -> tf.keras.Model:
