@@ -1,0 +1,468 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DermaScan — Melanoma Screening</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #F5F3EF;
+      --surface: #FFFFFF;
+      --surface-2: #FAF9F7;
+      --ink: #1A1A2E;
+      --ink-muted: #6B7080;
+      --ink-light: #9CA3AF;
+      --accent: #C0392B;
+      --accent-soft: #FDECEA;
+      --safe: #1A7A4A;
+      --safe-soft: #E8F5EE;
+      --warn: #B45309;
+      --warn-soft: #FEF3C7;
+      --border: #E8E6E1;
+      --radius: 16px;
+      --radius-sm: 10px;
+      --shadow: 0 2px 12px rgba(26,26,46,0.07);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--ink); min-height: 100vh; }
+
+    /* TOP BAR */
+    .top-bar {
+      background: var(--ink); color: #fff;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 40px; height: 58px; position: sticky; top: 0; z-index: 100;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; font-family: 'DM Serif Display', serif; font-size: 1.15rem; }
+    .brand-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+    .top-badge {
+      font-size: 0.67rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+      color: rgba(255,255,255,0.45); border: 1px solid rgba(255,255,255,0.15);
+      padding: 4px 10px; border-radius: 20px;
+    }
+
+    /* PAGE */
+    .page { max-width: 1100px; margin: 0 auto; padding: 36px 24px 72px; }
+
+    /* HERO */
+    .hero { margin-bottom: 32px; animation: up 0.5s ease both; }
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 7px;
+      font-size: 0.7rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent);
+      margin-bottom: 12px;
+    }
+    .eyebrow::before { content:''; display:block; width:18px; height:1.5px; background:var(--accent); }
+    .hero h1 { font-family: 'DM Serif Display', serif; font-size: clamp(1.9rem,3.8vw,2.9rem); line-height:1.1; letter-spacing:-0.02em; }
+    .hero h1 em { font-style:italic; color:var(--accent); }
+    .hero p { margin-top:12px; font-size:0.9rem; color:var(--ink-muted); max-width:500px; line-height:1.75; }
+
+    /* CARD */
+    .card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); }
+    .card-hd { padding:18px 22px 0; display:flex; align-items:center; gap:9px; }
+    .ch-icon { width:34px; height:34px; border-radius:9px; display:grid; place-items:center; font-size:0.95rem; flex-shrink:0; }
+    .ch-icon.r { background:var(--accent-soft); }
+    .ch-icon.g { background:var(--safe-soft); }
+    .ch-icon.a { background:var(--warn-soft); }
+    .ch-icon.b { background:#EFF6FF; }
+    .ch-title { font-size:0.75rem; font-weight:600; text-transform:uppercase; letter-spacing:0.09em; color:var(--ink-muted); }
+    .card-bd { padding:18px 22px 22px; }
+
+    /* GRID */
+    .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:18px; align-items:stretch; }
+    .grid-2 > .card { display:flex; flex-direction:column; }
+    .grid-2 > .card .card-bd { flex:1; display:flex; flex-direction:column; }
+    @media(max-width:720px){ .grid-2{grid-template-columns:1fr;} .top-bar{padding:0 18px;} .page{padding:22px 14px 56px;} }
+
+    /* UPLOAD */
+    .upload-box {
+      border:2px dashed var(--border); border-radius:var(--radius-sm); background:var(--surface-2);
+      padding:28px 18px; text-align:center; cursor:pointer;
+      transition:border-color 0.2s, background 0.2s; position:relative;
+    }
+    .upload-box:hover, .upload-box.drag { border-color:var(--accent); background:var(--accent-soft); }
+    .upload-box input { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
+    .up-ico { width:48px; height:48px; background:var(--surface); border:1px solid var(--border); border-radius:12px; display:grid; place-items:center; font-size:1.25rem; margin:0 auto 12px; box-shadow:var(--shadow); }
+    .up-main { font-size:0.88rem; font-weight:500; }
+    .up-sub { font-size:0.75rem; color:var(--ink-light); margin-top:3px; }
+    .up-fname { margin-top:8px; font-size:0.75rem; font-weight:500; color:var(--accent); display:none; }
+
+    .btn-analyze {
+      width:100%; margin-top:14px; padding:13px 18px;
+      background:var(--ink); color:#fff; border:none; border-radius:var(--radius-sm);
+      font-family:'DM Sans',sans-serif; font-size:0.88rem; font-weight:600; letter-spacing:0.02em;
+      cursor:pointer; transition:background 0.2s,transform 0.15s;
+      display:flex; align-items:center; justify-content:center; gap:8px;
+    }
+    .btn-analyze:hover:not(:disabled) { background:#2d2d4e; transform:translateY(-1px); }
+    .btn-analyze:disabled { opacity:0.6; cursor:not-allowed; transform:none; }
+    .spin { width:15px; height:15px; border:2px solid rgba(255,255,255,0.3); border-top-color:#fff; border-radius:50%; animation:rotate 0.7s linear infinite; display:none; }
+    .btn-analyze.loading .spin { display:block; }
+
+    .disc-bar {
+      margin-top:12px; background:var(--warn-soft); border:1px solid #FDE68A; border-radius:var(--radius-sm);
+      padding:9px 13px; display:flex; gap:7px; align-items:flex-start;
+      font-size:0.74rem; color:var(--warn); line-height:1.5;
+    }
+
+    /* PREVIEW */
+    .preview-frame {
+      border-radius:var(--radius-sm); border:1px solid var(--border); background:var(--surface-2);
+      min-height:220px; flex:1; display:grid; place-items:center; overflow:hidden;
+    }
+    .prev-ph { text-align:center; color:var(--ink-light); }
+    .prev-ph-ico { font-size:1.8rem; opacity:0.4; margin-bottom:6px; }
+    .prev-ph p { font-size:0.8rem; }
+    #previewImg { width:100%; max-height:260px; object-fit:contain; display:none; border-radius:var(--radius-sm); }
+
+    /* ERROR */
+    .err-bar {
+      display:none; grid-column:1/-1;
+      background:var(--accent-soft); border:1px solid #FECACA; border-radius:var(--radius-sm);
+      padding:11px 15px; font-size:0.83rem; color:var(--accent); gap:7px; align-items:center;
+      animation:up 0.3s ease both;
+    }
+    .err-bar.on { display:flex; }
+
+    /* RESULT — full width */
+    .result-wrap { grid-column:1/-1; display:none; animation:up 0.45s ease both; }
+    .result-wrap.on { display:block; }
+    .result-cols { display:grid; grid-template-columns:1fr 1fr 1fr; }
+    @media(max-width:720px){ .result-cols{grid-template-columns:1fr;} }
+    .rc {
+      padding:22px; border-right:1px solid var(--border);
+    }
+    .rc:last-child { border-right:none; }
+    @media(max-width:720px){
+      .rc { border-right:none; border-bottom:1px solid var(--border); }
+      .rc:last-child { border-bottom:none; }
+    }
+
+    .res-badge {
+      display:inline-flex; align-items:center; gap:5px;
+      font-size:0.68rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase;
+      padding:4px 10px; border-radius:20px;
+    }
+    .res-badge::before { content:''; width:5px; height:5px; border-radius:50%; background:currentColor; }
+    .res-badge.alert { background:var(--accent-soft); color:var(--accent); border:1px solid #FECACA; }
+    .res-badge.safe  { background:var(--safe-soft);   color:var(--safe);   border:1px solid #A7F3D0; }
+
+    .res-verdict { font-family:'DM Serif Display',serif; font-size:1.45rem; line-height:1.2; margin-top:8px; }
+    .res-verdict.mel { color:var(--accent); }
+    .res-verdict.ok  { color:var(--safe); }
+    .res-interp { font-size:0.8rem; color:var(--ink-muted); line-height:1.7; margin-top:8px; }
+
+    .prob-lbl { font-size:0.72rem; font-weight:600; text-transform:uppercase; letter-spacing:0.08em; color:var(--ink-muted); margin-bottom:4px; }
+    .prob-num { font-family:'DM Serif Display',serif; font-size:2.2rem; line-height:1; margin-bottom:10px; }
+    .prob-track { height:7px; background:var(--border); border-radius:99px; overflow:hidden; margin-bottom:5px; }
+    .prob-fill  { height:100%; width:0; border-radius:99px; transition:width 600ms cubic-bezier(0.4,0,0.2,1),background-color 300ms; }
+    .risk-tag { font-size:0.73rem; font-weight:600; }
+    .risk-tag.lo { color:var(--safe); } .risk-tag.md { color:var(--warn); } .risk-tag.hi { color:var(--accent); }
+
+    .stats-row { display:flex; gap:8px; margin-top:14px; }
+    .sc { flex:1; background:var(--surface-2); border:1px solid var(--border); border-radius:8px; padding:9px 10px; text-align:center; }
+    .sc-v { font-family:'DM Serif Display',serif; font-size:1.05rem; }
+    .sc-k { font-size:0.63rem; font-weight:600; text-transform:uppercase; letter-spacing:0.08em; color:var(--ink-light); margin-top:2px; }
+
+    .act-list { list-style:none; margin-top:8px; }
+    .act-list li { display:flex; gap:9px; align-items:flex-start; padding:7px 0; font-size:0.8rem; color:var(--ink-muted); border-bottom:1px solid var(--border); line-height:1.55; }
+    .act-list li:last-child { border-bottom:none; }
+    .act-num { flex-shrink:0; width:19px; height:19px; border-radius:50%; display:grid; place-items:center; font-size:0.63rem; font-weight:700; background:var(--ink); color:#fff; margin-top:1px; }
+    .act-num.r { background:var(--accent); } .act-num.g { background:var(--safe); }
+
+    /* INFO */
+    .info-row { display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-top:18px; animation:up 0.5s 0.2s ease both; }
+    @media(max-width:720px){ .info-row{grid-template-columns:1fr;} }
+    .info-full { margin-top:18px; animation:up 0.5s 0.3s ease both; }
+
+    .tips-list { list-style:none; display:flex; flex-direction:column; gap:7px; }
+    .tips-list li { display:flex; gap:10px; align-items:flex-start; font-size:0.81rem; color:var(--ink-muted); line-height:1.6; }
+    .td {
+      flex-shrink:0; width:20px; height:20px; border-radius:6px;
+      display:grid; place-items:center;
+      font-size:0.6rem; font-weight:700; color:#fff;
+      background:var(--ink); margin-top:1px;
+      counter-increment: tip-counter;
+    }
+    .tips-list.amber .td { background:var(--warn); }
+    .tips-list.green  .td { background:var(--safe); }
+
+    /* ABCDE */
+    .abcde-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:10px; margin-top:14px; }
+    @media(max-width:540px){ .abcde-grid{grid-template-columns:repeat(2,1fr);} }
+    .abcde-cell {
+      background:var(--surface-2); border:1px solid var(--border); border-radius:12px;
+      padding:14px 10px; text-align:center; transition:border-color 0.2s,transform 0.15s;
+    }
+    .abcde-cell:hover { border-color:var(--accent); transform:translateY(-2px); }
+    .abcde-L { font-family:'DM Serif Display',serif; font-size:1.55rem; color:var(--accent); line-height:1; }
+    .abcde-W { font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--ink); margin:4px 0 2px; }
+    .abcde-D { font-size:0.7rem; color:var(--ink-light); line-height:1.4; }
+
+    /* FOOT */
+    .foot-disc {
+      margin-top:18px; background:var(--surface); border:1px solid var(--border);
+      border-radius:var(--radius-sm); padding:14px 18px;
+      font-size:0.73rem; color:var(--ink-muted); line-height:1.75;
+    }
+
+    /* ANIMS */
+    @keyframes up { from{opacity:0;transform:translateY(13px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes rotate { to{transform:rotate(360deg)} }
+
+    .upload-panel { animation:up 0.5s 0.1s ease both; }
+    .preview-panel { animation:up 0.5s 0.15s ease both; }
+  </style>
+</head>
+<body>
+
+<header class="top-bar">
+  <div class="brand"><div class="brand-dot"></div>DermaScan</div>
+  <span class="top-badge">Educational Screening Tool</span>
+</header>
+
+<div class="page">
+
+  <div class="hero">
+    <div class="eyebrow">Skin Lesion AI</div>
+    <h1>Melanoma Screening<br><em>Web Workflow</em></h1>
+    <p>Upload a dermoscopic lesion image to run the trained CNN model. Results support clinical review — they do not replace it.</p>
+  </div>
+
+  <div class="grid-2">
+
+    <!-- UPLOAD -->
+    <div class="card upload-panel">
+      <div class="card-hd"><div class="ch-icon r">🔬</div><span class="ch-title">Upload Lesion Image</span></div>
+      <div class="card-bd">
+        <div class="upload-box" id="uploadBox">
+          <input type="file" id="imageInput" accept="image/*" />
+          <div class="up-ico">📁</div>
+          <p class="up-main">Click or drag image here</p>
+          <p class="up-sub">JPG / PNG · Max 5 MB</p>
+          <p class="up-fname" id="fname"></p>
+        </div>
+        <button class="btn-analyze" id="predictBtn">
+          <div class="spin"></div>
+          <span id="btnTxt">Analyze Lesion</span>
+        </button>
+        <div style="margin-top:12px; background:#EFF6FF; border:1px solid #BFDBFE; border-radius:var(--radius-sm); padding:9px 13px; font-size:0.74rem; color:#1E40AF; line-height:1.5;">
+          ℹ️ <span>Clear, well-lit, focused images improve prediction reliability.</span>
+        </div>
+        <div class="disc-bar">💡 <span>AI-powered screening designed to support early detection. Use results to guide dermatologist consultation — clinical confirmation is essential.</span></div>
+      </div>
+    </div>
+
+    <!-- PREVIEW -->
+    <div class="card preview-panel">
+      <div class="card-hd"><div class="ch-icon b">🖼️</div><span class="ch-title">Image Preview</span></div>
+      <div class="card-bd">
+        <div class="preview-frame">
+          <div class="prev-ph" id="prevPH">
+            <div class="prev-ph-ico">🩺</div>
+            <p>Your lesion image<br>will appear here</p>
+          </div>
+          <img id="previewImg" alt="Lesion preview" />
+        </div>
+      </div>
+    </div>
+
+    <!-- ERROR -->
+    <div class="err-bar" id="errBar">⚠️ <span id="errMsg"></span></div>
+
+    <!-- RESULT -->
+    <div class="result-wrap card" id="resultWrap">
+      <div class="card-hd"><div class="ch-icon r">📊</div><span class="ch-title">Prediction Result</span></div>
+      <div class="result-cols">
+
+        <div class="rc">
+          <span id="resBadge" class="res-badge"></span>
+          <div id="resVerdict" class="res-verdict"></div>
+          <p id="resInterp" class="res-interp"></p>
+        </div>
+
+        <div class="rc" style="background:#F8FAFC; border-left:1px solid var(--border);">
+          <div class="prob-lbl">Melanoma Probability</div>
+          <div class="prob-num" id="probNum">—</div>
+          <div class="prob-track"><div class="prob-fill" id="probFill"></div></div>
+          <div class="risk-tag" id="riskTag"></div>
+          <div class="stats-row">
+            <div class="sc"><div class="sc-v">96.6%</div><div class="sc-k">Sensitivity</div></div>
+            <div class="sc"><div class="sc-v">36%</div><div class="sc-k">Precision</div></div>
+            <div class="sc"><div class="sc-v">0.33</div><div class="sc-k">Threshold</div></div>
+          </div>
+          <div style="margin-top:12px; font-size:0.73rem; color:var(--ink-muted); line-height:1.6;">
+            <p><strong style="color:var(--ink);">Model Behavior:</strong></p>
+            <p>✔ High sensitivity (96.6%) → Rarely misses melanoma cases</p>
+            <p>⚠ Lower precision (36%) → Some benign lesions may be flagged</p>
+            <p style="margin-top:6px; font-style:italic;">This is intentional for safer medical screening.</p>
+          </div>
+        </div>
+
+        <div class="rc">
+          <div class="prob-lbl">Recommended Actions</div>
+          <ul class="act-list" id="actList"></ul>
+        </div>
+
+      </div>
+    </div>
+
+  </div><!-- /grid -->
+
+  <!-- INFO ROW -->
+  <div class="info-row">
+    <div class="card">
+      <div class="card-hd"><div class="ch-icon a">📷</div><span class="ch-title">Photo Guidelines</span></div>
+      <div class="card-bd">
+        <ul class="tips-list amber">
+          <li><span class="td">1</span>Use bright, even lighting — avoid shadows and flash glare.</li>
+          <li><span class="td">2</span>Keep the camera steady and focused on the lesion.</li>
+          <li><span class="td">3</span>Capture the lesion area with a small margin of surrounding skin.</li>
+          <li><span class="td">4</span>Avoid blurry, distant, or low-resolution photographs.</li>
+          <li><span class="td">5</span>Upload JPG or PNG, then click "Analyze Lesion".</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-hd"><div class="ch-icon g">🛡️</div><span class="ch-title">Skin Protection</span></div>
+      <div class="card-bd">
+        <ul class="tips-list green">
+          <li><span class="td">1</span>Apply broad-spectrum sunscreen (SPF 30–50+) every day.</li>
+          <li><span class="td">2</span>Avoid direct sun exposure between 10 AM and 4 PM.</li>
+          <li><span class="td">3</span>Do not use tanning lamps or other artificial UV sources.</li>
+          <li><span class="td">4</span>Wear protective clothing, a wide-brim hat, and sunglasses.</li>
+          <li><span class="td">5</span>Reapply sunscreen every 2–3 hours when outdoors.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ABCDE -->
+  <div class="info-full">
+    <div class="card">
+      <div class="card-hd"><div class="ch-icon r">🔎</div><span class="ch-title">ABCDE Early Warning Signs</span></div>
+      <div class="card-bd">
+        <p style="font-size:0.8rem;color:var(--ink-muted);">Apply the ABCDE rule during monthly self-examinations to identify potential melanoma early.</p>
+        <div class="abcde-grid">
+          <div class="abcde-cell"><div class="abcde-L">A</div><div class="abcde-W">Asymmetry</div><div class="abcde-D">One half unlike the other</div></div>
+          <div class="abcde-cell"><div class="abcde-L">B</div><div class="abcde-W">Border</div><div class="abcde-D">Irregular or blurred edges</div></div>
+          <div class="abcde-cell"><div class="abcde-L">C</div><div class="abcde-W">Color</div><div class="abcde-D">Multiple or uneven shades</div></div>
+          <div class="abcde-cell"><div class="abcde-L">D</div><div class="abcde-W">Diameter</div><div class="abcde-D">Greater than 6 mm</div></div>
+          <div class="abcde-cell"><div class="abcde-L">E</div><div class="abcde-W">Evolving</div><div class="abcde-D">Changes in size, shape, color</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:18px; background:var(--warn-soft); border:1px solid #FDE68A; border-radius:var(--radius-sm); padding:14px 18px; font-size:0.75rem; color:var(--warn); line-height:1.7; text-align:center;">
+    <strong style="color:var(--warn); font-size:0.85rem;">⭐ Early Detection Saves Lives</strong><br>
+    Early detection significantly increases survival rates in melanoma. Regular self-examinations and early professional consultation are critical.
+  </div>
+
+  <div class="foot-disc">
+    <strong>Disclaimer:</strong> This is an AI-based educational screening tool, not a medical diagnosis. It may not generalize to all skin tones or rare lesion types, and accuracy depends on image quality. Always consult a qualified dermatologist for clinical confirmation.
+  </div>
+
+</div>
+
+<script>
+  const imageInput = document.getElementById('imageInput');
+  const uploadBox   = document.getElementById('uploadBox');
+  const fname       = document.getElementById('fname');
+  const previewImg  = document.getElementById('previewImg');
+  const prevPH      = document.getElementById('prevPH');
+  const predictBtn  = document.getElementById('predictBtn');
+  const btnTxt      = document.getElementById('btnTxt');
+  const resultWrap  = document.getElementById('resultWrap');
+  const errBar      = document.getElementById('errBar');
+  const errMsg      = document.getElementById('errMsg');
+  const resBadge    = document.getElementById('resBadge');
+  const resVerdict  = document.getElementById('resVerdict');
+  const resInterp   = document.getElementById('resInterp');
+  const probNum     = document.getElementById('probNum');
+  const probFill    = document.getElementById('probFill');
+  const riskTag     = document.getElementById('riskTag');
+  const actList     = document.getElementById('actList');
+
+  uploadBox.addEventListener('dragover', e => { e.preventDefault(); uploadBox.classList.add('drag'); });
+  uploadBox.addEventListener('dragleave', ()=> uploadBox.classList.remove('drag'));
+  uploadBox.addEventListener('drop', e => { e.preventDefault(); uploadBox.classList.remove('drag'); const f = e.dataTransfer.files[0]; if(f) loadFile(f); });
+  imageInput.addEventListener('change', e => { const f = e.target.files?.[0]; if(f) loadFile(f); });
+
+  function loadFile(file) {
+    fname.textContent = file.name; fname.style.display = 'block';
+    const r = new FileReader();
+    r.onload = ev => { previewImg.src = ev.target.result; previewImg.style.display = 'block'; prevPH.style.display = 'none'; };
+    r.readAsDataURL(file);
+  }
+
+  predictBtn.addEventListener('click', async () => {
+    const file = imageInput.files?.[0];
+    if (!file) { showErr('Please select an image first.'); return; }
+    if (file.size > 5*1024*1024) { showErr('File too large — please use a focused lesion image under 5 MB.'); return; }
+    reset();
+    predictBtn.disabled = true;
+    predictBtn.classList.add('loading');
+    btnTxt.textContent = 'Analyzing…';
+    const fd = new FormData(); fd.append('file', file);
+    try {
+      const res = await fetch('/predict', { method:'POST', body:fd });
+      const data = await res.json();
+      if (!res.ok || data.status !== 'success') throw new Error(data.message || 'Prediction failed.');
+      showResult(data);
+    } catch(err) {
+      showErr(err.message || 'Unexpected error.');
+    } finally {
+      predictBtn.disabled = false;
+      predictBtn.classList.remove('loading');
+      btnTxt.textContent = 'Analyze Lesion';
+    }
+  });
+
+  function showResult(data) {
+    const pct = (data.melanoma_probability * 100).toFixed(1);
+    const p = data.melanoma_probability;
+    const mel = data.predicted_label === 'Melanoma';
+
+    resBadge.textContent = mel ? 'Screening Alert' : 'Lower Risk';
+    resBadge.className = 'res-badge ' + (mel ? 'alert' : 'safe');
+    resVerdict.textContent = mel ? 'Possible Melanoma Pattern Detected' : 'Likely Non-Melanoma';
+    resVerdict.className = 'res-verdict ' + (mel ? 'mel' : 'ok');
+    resInterp.textContent = mel
+      ? 'This model is tuned for high sensitivity, reducing missed cases. Some benign lesions may also be flagged. Clinical confirmation is required.'
+      : 'Screening suggests a lower-risk pattern. Continue monitoring and consult a dermatologist if any changes are observed.';
+
+    probNum.textContent = pct + '%';
+    setTimeout(()=>{
+      probFill.style.width = Math.min(100, Number(pct)) + '%';
+      if (p >= 0.66) { probFill.style.backgroundColor='#C0392B'; riskTag.textContent='▲ High Risk Level'; riskTag.className='risk-tag hi'; }
+      else if (p >= 0.33) { probFill.style.backgroundColor='#D97706'; riskTag.textContent='◆ Medium Risk Level'; riskTag.className='risk-tag md'; }
+      else { probFill.style.backgroundColor='#1A7A4A'; riskTag.textContent='● Low Risk Level'; riskTag.className='risk-tag lo'; }
+    }, 60);
+
+    actList.innerHTML = '';
+    const acts = mel
+      ? ['Do not panic — this is a screening result, not a diagnosis.','Book a dermatologist appointment within 1–2 weeks.','Seek immediate care if lesion is bleeding, rapidly growing, or painful.','Do not apply home remedies or attempt self-removal.','Keep a dated photo record for medical comparison.']
+      : ['Not a final diagnosis — continue periodic monitoring.','Apply the ABCDE rule monthly to track changes.','Re-examine the lesion every 1–2 months.','Consult a dermatologist promptly if any change occurs.'];
+    const cls = mel ? 'r' : 'g';
+    acts.forEach((t,i)=>{
+      const li = document.createElement('li');
+      li.innerHTML = `<span class="act-num ${cls}">${i+1}</span><span>${t}</span>`;
+      actList.appendChild(li);
+    });
+
+    resultWrap.classList.add('on');
+    setTimeout(()=>resultWrap.scrollIntoView({behavior:'smooth',block:'nearest'}), 200);
+  }
+
+  function showErr(m) { errMsg.textContent = m; errBar.classList.add('on'); }
+  function reset() {
+    errBar.classList.remove('on');
+    resultWrap.classList.remove('on');
+    probFill.style.width = '0%';
+  }
+</script>
+</body>
+</html>
