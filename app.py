@@ -8,11 +8,7 @@ from tensorflow import keras
 from flask import Flask, jsonify, render_template, request
 from PIL import Image, UnidentifiedImageError
 
-_APP_DIR = Path(__file__).resolve().parent
-_MODEL_CANDIDATES = [
-    _APP_DIR / "final_model_new.keras",
-    _APP_DIR.parent / "notebooks" / "final_model_new.keras",
-]
+MODEL_PATH = Path(__file__).parent / "final_model_new.keras"
 IMG_SIZE: Tuple[int, int] = (224, 224)
 THRESHOLD = 0.33
 
@@ -21,11 +17,9 @@ app = Flask(__name__, template_folder="templates", static_folder="static")
 _model = None
 
 def find_model_path() -> Path:
-    for candidate in _MODEL_CANDIDATES:
-        if candidate.exists():
-            return candidate
-    searched = "\n  ".join(str(p) for p in _MODEL_CANDIDATES)
-    raise FileNotFoundError(f"Model not found. Searched:\n  {searched}")
+    if MODEL_PATH.exists():
+        return MODEL_PATH
+    raise FileNotFoundError(f"Model not found: {MODEL_PATH}")
 
 def get_model() -> tf.keras.Model:
     global _model
